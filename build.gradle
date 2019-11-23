@@ -1,0 +1,51 @@
+plugins {
+    id("org.jetbrains.kotlin.jvm") version '1.2.71'
+    id 'java'
+}
+
+allprojects {
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
+        kotlinOptions {
+            languageVersion = "1.2"
+            apiVersion = "1.2"
+            jvmTarget = "1.8"
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven { url = "https://software.r3.com/artifactory/corda-dependencies" }
+}
+ 
+configurations {
+    all*.exclude group: 'org.apache.jmeter', module: 'jorphan'
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.71"
+    api "net.corda:corda-core:4.1"
+    compile "net.corda:corda-rpc:4.1"
+ // api 'com.r3.corda:corda-ptflows:4.2'
+    api 'org.apache.jmeter:ApacheJMeter_java:5.2'
+}
+
+jar {
+    baseName project.name
+ // from {
+ //     configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+ // }
+}
+
+task copySampler(type:Copy, dependsOn:[jar]) {
+    copy {
+        from jar
+        into '/opt/jmeter5/lib/'
+    }
+}
+
+wrapper {
+    gradleVersion = "5.4.1"
+    distributionType = Wrapper.DistributionType.ALL
+}
