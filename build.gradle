@@ -1,3 +1,17 @@
+buildscript {
+    def confFile = 'corda-sampler.config'
+    Properties conf = new Properties()
+    if (file(confFile).exists()) {
+        file(confFile).withInputStream { conf.load(it) }
+        ext.jmeterHome = conf.getProperty("JMETER_HOME")
+     // ext.artifactory_user = conf.getProperty("CORDA_ARTIFACTORY_USERNAME")
+     // ext.artifactory_password = creds.getProperty("CORDA_ARTIFACTORY_PASSWORD")
+    } else {
+        ext.jmeterHome = System.getenv("JMETER_HOME") ?: "/opt/jmeter5"
+     // ext.artifactory_user = System.getenv("CORDA_ARTIFACTORY_USERNAME")
+     // ext.artifactory_password = System.getenv("CORDA_ARTIFACTORY_PASSWORD")
+    }
+}
 plugins {
     id("org.jetbrains.kotlin.jvm") version '1.2.71'
     id 'java'
@@ -24,9 +38,9 @@ configurations {
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.71"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.71"
     api "net.corda:corda-core:4.1"
-    compile "net.corda:corda-rpc:4.1"
+    implementation "net.corda:corda-rpc:4.1"
  // api 'com.r3.corda:corda-ptflows:4.2'
     api 'org.apache.jmeter:ApacheJMeter_java:5.2'
 }
@@ -36,14 +50,15 @@ jar {
 }
 
 task copyLib(type:Copy) {
-    from configurations.compile
-    into '/opt/jmeter5/lib'
-    duplicatesStrategy 'warn'
+    from configurations.default
+    into "$jmeterHome/lib"
+    duplicatesStrategy DuplicatesStrategy.WARN
+    exclude "kotlin-stdlib-jdk7*"
 }
 
 task copySampler(type:Copy, dependsOn:[build, copyLib]) {
     from jar
-    into '/opt/jmeter5/lib/ext'
+    into "$jmeterHome/lib/ext"
 }
 
 wrapper {
