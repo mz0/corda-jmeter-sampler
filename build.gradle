@@ -5,7 +5,7 @@ buildscript {
         file(confFile).withInputStream { conf.load(it) }
         ext.jmeterHome = conf.getProperty("JMETER_HOME")
      // ext.artifactory_user = conf.getProperty("CORDA_ARTIFACTORY_USERNAME")
-     // ext.artifactory_password = creds.getProperty("CORDA_ARTIFACTORY_PASSWORD")
+     // ext.artifactory_password = conf.getProperty("CORDA_ARTIFACTORY_PASSWORD")
     } else {
         ext.jmeterHome = System.getenv("JMETER_HOME") ?: "/opt/jmeter5"
      // ext.artifactory_user = System.getenv("CORDA_ARTIFACTORY_USERNAME")

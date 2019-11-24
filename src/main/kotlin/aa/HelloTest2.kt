@@ -14,18 +14,18 @@ import org.apache.jmeter.samplers.SampleResult
 import org.apache.jmeter.testelement.TestElement
 
 class HelloTest2:  JavaSamplerClient, Serializable, Interruptible {
-    private val nodePrmField = "node host:p2p-port"
-    private lateinit var hostPort: String
+ // private val nodePrmField = "node host:p2p-port"
+ // private lateinit var hostPort: String
     private lateinit var samTag: String
     @Transient lateinit var myThread: Thread
     private var rpcParams: RPCParams? = null
 
     companion object {
-        private const val serialVersionUID = 20191122L
+        private const val serialVersionUID = 20191112L
         private data class RPCParams(val address: NetworkHostAndPort, val user: String, val password: String)
         private data class RPCClient(val rpcClient: CordaRPCClient, val rpcConnection: CordaRPCConnection, val ops: CordaRPCOps)
-        val host = Argument("host", "localhost")
-        val port = Argument("port", "10010")
+        val host = Argument("host", "192.168.1.191")
+        val port = Argument("port", "10001")
         val username = Argument("RPC username", "User1")
         val password = Argument("RPC password", "Passw")
         val rpcArgs = setOf(host, port, username, password)
@@ -36,20 +36,27 @@ class HelloTest2:  JavaSamplerClient, Serializable, Interruptible {
     }
 
     override fun setupTest(context: JavaSamplerContext) {
-        hostPort = context.getParameter(nodePrmField);
         samTag = context.getParameter(TestElement.NAME);
     }
 
     override fun runTest(context: JavaSamplerContext): SampleResult {
         val results = SampleResult();
         results.setSampleLabel(samTag);
-        rpcParams = RPCParams(NetworkHostAndPort(context.getParameter(host.name), context.getIntParameter(port.name)), context.getParameter(username.name), context.getParameter(password.name))
         // prepare test
-        results.setSamplerData("Test node: " + hostPort);
+        rpcParams = RPCParams(NetworkHostAndPort(context.getParameter(host.name), context.getIntParameter(port.name)),
+                context.getParameter(username.name),
+                context.getParameter(password.name))
+        val client = CordaRPCClient(NetworkHostAndPort(context.getParameter(host.name), context.getIntParameter(port.name)))
+        val connection = client.start(context.getParameter(username.name), context.getParameter(password.name))
+        val cordaRPCOps = connection.proxy
+
+        results.setSamplerData("Test node: " + context.getParameter(host.name));
         try {
             results.sampleStart(); // Record sample start time.
             myThread = Thread.currentThread();
             // do test
+            cordaRPCOps.currentNodeTime().toString()
+            connection.notifyServerAndClose()
             results.setSuccessful(true);
         } catch (e: InterruptedException) {
             //LOG.warn("Test: interrupted.");
