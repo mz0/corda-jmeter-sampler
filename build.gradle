@@ -12,9 +12,10 @@ buildscript {
      // ext.artifactory_password = System.getenv("CORDA_ARTIFACTORY_PASSWORD")
     }
 }
+
 plugins {
     id("org.jetbrains.kotlin.jvm") version '1.2.71'
-    id 'java'
+    id 'java-library'
 }
 
 allprojects {
@@ -42,7 +43,7 @@ dependencies {
     api "net.corda:corda-core:4.1"
     implementation "net.corda:corda-rpc:4.1"
  // api 'com.r3.corda:corda-ptflows:4.2'
-    api 'org.apache.jmeter:ApacheJMeter_java:5.2'
+    compileOnly 'org.apache.jmeter:ApacheJMeter_java:5.2'
 }
 
 jar {
@@ -53,10 +54,13 @@ task copyLib(type:Copy) {
     from configurations.default
     into "$jmeterHome/lib"
     duplicatesStrategy DuplicatesStrategy.WARN
-    exclude "kotlin-stdlib-jdk7*"
+    exclude 'kotlin-stdlib-jdk7*', 'slf4j-api-1.7.25*', 'jcl-over-slf4j-1.7.25*', 'commons-jexl3-3.0*', 'asm-5.0.4*'
+    exclude 'jackson-databind-2.9.5*', 'jackson-core-2.9.5*', 'jackson-annotations-2.9.0*', 'caffeine-2.6.2*'
+    exclude 'error_prone_annotations-2.1.3*'
+    exclude 'hibernate-commons-annotations*', 'groovy-all*', 'hibernate-core*' // ?Saxon-HE, ?xalan,
 }
 
-task copySampler(type:Copy, dependsOn:[build, copyLib]) {
+task install(type:Copy, dependsOn:[build, copyLib]) {
     from jar
     into "$jmeterHome/lib/ext"
 }
