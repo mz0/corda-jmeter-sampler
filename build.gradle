@@ -4,12 +4,12 @@ buildscript {
     if (file(confFile).exists()) {
         file(confFile).withInputStream { conf.load(it) }
         ext.jmeterHome = conf.getProperty("JMETER_HOME")
-     // ext.artifactory_user = conf.getProperty("CORDA_ARTIFACTORY_USERNAME")
-     // ext.artifactory_password = conf.getProperty("CORDA_ARTIFACTORY_PASSWORD")
+        ext.artifactory_user = conf.getProperty("CORDA_ARTIFACTORY_USERNAME")
+        ext.artifactory_password = conf.getProperty("CORDA_ARTIFACTORY_PASSWORD")
     } else {
         ext.jmeterHome = System.getenv("JMETER_HOME") ?: "/opt/jmeter5"
-     // ext.artifactory_user = System.getenv("CORDA_ARTIFACTORY_USERNAME")
-     // ext.artifactory_password = System.getenv("CORDA_ARTIFACTORY_PASSWORD")
+        ext.artifactory_user = System.getenv("CORDA_ARTIFACTORY_USERNAME")
+        ext.artifactory_password = System.getenv("CORDA_ARTIFACTORY_PASSWORD")
     }
 }
 
@@ -32,6 +32,13 @@ repositories {
     mavenCentral()
     mavenLocal()
     maven { url = "https://software.r3.com/artifactory/corda-dependencies" }
+    maven {
+        url = "https://software.r3.com/artifactory/r3-corda-releases"
+        credentials {
+            username = artifactory_user
+            password = artifactory_password
+        }
+    }
 }
  
 configurations {
@@ -40,9 +47,9 @@ configurations {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.71"
-    api "net.corda:corda-core:4.1"
-    implementation "net.corda:corda-rpc:4.1"
- // api 'com.r3.corda:corda-ptflows:4.2'
+    api "net.corda:corda-core:4.3"
+    implementation "net.corda:corda-rpc:4.3"
+    api 'com.r3.corda:corda-ptflows:4.3.1'
     compileOnly 'org.apache.jmeter:ApacheJMeter_java:5.2'
 }
 
