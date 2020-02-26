@@ -45,14 +45,13 @@ class HelloTest2:  JavaSamplerClient, Serializable, Interruptible {
         LOG.info("$node test setup start")
         client = CordaRPCClient(NetworkHostAndPort(context.getParameter(host.name), context.getIntParameter(port.name)))
         LOG.info("$node CordaRPCClient created")
+        connection = client.start(context.getParameter(username.name), context.getParameter(password.name))
+        LOG.info("$node CordaRPCConnection started")
+        rpcOps = connection.proxy
+        LOG.info("$node test setup done")
     }
 
     override fun runTest(context: JavaSamplerContext): SampleResult {
-        connection = client.start(context.getParameter(username.name), context.getParameter(password.name))
-        LOG.info("$node CordaRPCClient connectton started")
-        rpcOps = connection.proxy
-        LOG.info("$node test setup done")
-
         val results = SampleResult();
         results.setSampleLabel(samTag);
         results.setSamplerData("Test node: " + context.getParameter(host.name));

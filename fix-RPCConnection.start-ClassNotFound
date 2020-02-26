@@ -1,0 +1,22 @@
+cd /opt/jmeter5/lib
+rm jackson-core-2.9.7.jar jackson-databind-2.9.7.jar
+rm caffeine-2.7.0.jar
+rm liquibase-core-3.*
+rm corda-serialization-4.[21]*
+rm corda-core-4.[21]*
+rm corda-common-configuration-parsing-4.2.jar corda-common-validation-4.2.jar
+rm config-1.3.3.jar
+rm commons-collections4-4.1.jar corda-node-api-4.2.jar corda-node-api-4.1.jar corda-ptflows-4.2.jar corda-rpc-4.2.jar corda-rpc-4.1.jar
+
+rm animal-sniffer-annotations-1.14.jar
+rm asm-5.2.jar
+rm byte-buddy-1.9.5.jar
+rm checker-qual-2.[05].0.jar
+rm classgraph-4.6.12.jar
+rm error_prone_annotations-2.3.[13].jar
+rm guava-25.1-jre.jar
+rm HikariCP-2.7.9.jar
+rm HikariCP-2.5.1.jar
+rm j2objc-annotations-1.1.jar javassist-3.23.[12]-GA.jar
+rm jcl-over-slf4j-1.7.26.jar kryo-4.0.0.jar
+rm objenesis-2.2.jar snakeyaml-1.17.jar

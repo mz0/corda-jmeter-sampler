@@ -47,8 +47,8 @@ configurations {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.2.71"
-    api "com.r3.corda:corda-core:4.3"
-    implementation "com.r3.corda:corda-rpc:4.3"
+    api "net.corda:corda-core:4.3"
+    implementation "net.corda:corda-rpc:4.3"
     api 'com.r3.corda:corda-ptflows:4.3.1'
     compileOnly 'org.apache.jmeter:ApacheJMeter_java:5.2'
 }
@@ -72,6 +72,8 @@ task install(type:Copy, dependsOn:[build, copyLib]) {
     from jar
     into "$jmeterHome/lib/ext"
 }
+
+//clean { dependsOn = [ cleanInstall, cleanCopyLib, ] } - do not enable! kills all $jmeterHome/lib
 
 wrapper {
     gradleVersion = "5.4.1"
