@@ -1,10 +1,14 @@
 package aa
 
+import com.r3.corda.enterprise.perftestcordapp.DOLLARS
+import com.r3.corda.enterprise.perftestcordapp.flows.AbstractCashFlow
 import com.r3.corda.enterprise.perftestcordapp.flows.CashIssueFlow
+import com.r3.corda.enterprise.perftestcordapp.flows.CashPaymentFromKnownStatesFlow
 import java.io.Serializable
 import net.corda.client.rpc.CordaRPCClient
 import net.corda.client.rpc.CordaRPCConnection
 import net.corda.core.contracts.Amount
+import net.corda.core.contracts.StateRef
 import net.corda.core.flows.FlowLogic
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
@@ -23,7 +27,7 @@ import org.slf4j.LoggerFactory
 import java.util.*
 
 class HelloTest2:  JavaSamplerClient, Serializable, Interruptible {
-    // class FlowInvoke<T : FlowLogic<*>>(val flowLogicClass: Class<out T>, val args: Array<Any?>)
+    class FlowInvoke<T : FlowLogic<*>>(val flowLogicClass: Class<out T>, val args: Array<Any?>)
     private lateinit var samTag: String
     private lateinit var rpcOps: CordaRPCOps
     private lateinit var node: String
@@ -35,6 +39,7 @@ class HelloTest2:  JavaSamplerClient, Serializable, Interruptible {
     private var states: Int = 1
     private var changes: Int = 1
     private var anonymously: Boolean = true
+    private var flowResult: Any? = null
     @Transient lateinit var myThread: Thread
 
     companion object {
@@ -81,19 +86,23 @@ class HelloTest2:  JavaSamplerClient, Serializable, Interruptible {
         LOG.info("$node issuing enough dollars for $states states of 1 USD each") // technically $states is enough, anyway make 2x of them.
         reserve = Amount.fromDecimal((states*2).toBigDecimal(), Currency.getInstance("USD"))
         //val flowInvoke = FlowInvoke<CashIssueFlow>(CashIssueFlow::class.java, arrayOf(reserve, OpaqueBytes.of(1), notary))
-        rpcOps.startFlowDynamic(CashIssueFlow::class.java, reserve, OpaqueBytes.of(1), notary).returnValue.getOrThrow()
+        flowResult = rpcOps.startFlowDynamic(CashIssueFlow::class.java, reserve, OpaqueBytes.of(1), notary)
+                .returnValue.getOrThrow()
         LOG.info("$node test setup done")
     }
 
     override fun runTest(context: JavaSamplerContext): SampleResult {
+        val flowInvoke = mkCPfKSInvoke()
         val results = SampleResult()
-        results.sampleLabel = samTag
         results.samplerData = "Test node: " + context.getParameter(host.name)
+        results.sampleStart() // Record sample start time.
+        val handle = rpcOps.startFlowDynamic(flowInvoke.flowLogicClass, *(flowInvoke.args))
+        results.sampleLabel = samTag ?: flowInvoke.flowLogicClass.simpleName
         try {
-            results.sampleStart() // Record sample start time.
             myThread = Thread.currentThread()
             // do test
             LOG.info("$node time was: ${rpcOps.currentNodeTime()}")
+            flowResult = handle.returnValue.get()
             results.isSuccessful = true
         } catch (e: InterruptedException) {
             LOG.warn("$node test interrupted.")
@@ -134,5 +143,19 @@ class HelloTest2:  JavaSamplerClient, Serializable, Interruptible {
         val alive = ::myThread.isInitialized
         if (alive) myThread.interrupt()
         return alive
+    }
+
+    private fun mkCPfKSInvoke(): FlowInvoke<*> {
+        var inputStartIndex = 0
+        var inputEndIndex = 0
+
+        val txId = (flowResult as AbstractCashFlow.Result).id  // here gets CashIssueFlow id
+        // Change is always the latter outputs
+        val inputs = (inputStartIndex..inputEndIndex).map { StateRef(txId, it) }.toSet()
+        val amount = 1.DOLLARS
+        inputStartIndex = states
+        inputEndIndex = inputStartIndex + (changes - 1)
+        return FlowInvoke<CashPaymentFromKnownStatesFlow>(CashPaymentFromKnownStatesFlow::class.java,
+                arrayOf(inputs, states, changes, amount, toParty, anonymously))
     }
 }
