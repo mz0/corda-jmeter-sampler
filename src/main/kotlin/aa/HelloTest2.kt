@@ -24,7 +24,7 @@ import org.apache.jmeter.samplers.Interruptible
 import org.apache.jmeter.samplers.SampleResult
 import org.apache.jmeter.testelement.TestElement
 import org.slf4j.LoggerFactory
-import java.util.*
+import java.util.Currency
 
 class HelloTest2:  JavaSamplerClient, Serializable, Interruptible {
     class FlowInvoke<T : FlowLogic<*>>(val flowLogicClass: Class<out T>, val args: Array<Any?>)
@@ -149,7 +149,7 @@ class HelloTest2:  JavaSamplerClient, Serializable, Interruptible {
         var inputStartIndex = 0
         var inputEndIndex = 0
 
-        val txId = (flowResult as AbstractCashFlow.Result).id  // here gets CashIssueFlow id
+        val txId = (flowResult as AbstractCashFlow.Result).id  // here gets CashIssueFlow result id
         // Change is always the latter outputs
         val inputs = (inputStartIndex..inputEndIndex).map { StateRef(txId, it) }.toSet()
         val amount = 1.DOLLARS
